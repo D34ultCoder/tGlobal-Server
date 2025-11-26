@@ -37,7 +37,11 @@ export class PatientsController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Invalid input data or email already exists',
+    description: 'Invalid input data',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Email already exists',
   })
   create(@Body() createPatientDto: CreatePatientDto) {
     return this.patientsService.create(createPatientDto);

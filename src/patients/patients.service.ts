@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
@@ -8,12 +8,21 @@ export class PatientsService {
   constructor(private prisma: PrismaService) {}
 
   async create(createPatientDto: CreatePatientDto) {
-    return this.prisma.patient.create({
-      data: createPatientDto,
-      include: {
-        consultationNotes: true,
-      },
-    });
+    try {
+      return await this.prisma.patient.create({
+        data: createPatientDto,
+        include: {
+          consultationNotes: true,
+        },
+      });
+    } catch (error) {
+      if (error.code === 'P2002') {
+        throw new ConflictException(
+          `A patient with email ${createPatientDto.email} already exists`,
+        );
+      }
+      throw error;
+    }
   }
 
   async findAll(status?: string) {
